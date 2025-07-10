@@ -17,7 +17,6 @@ class Program
             config.SetMinimumLevel(LogLevel.Information);
         });
 
-        // 🧩 Add dependencies
         services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
         services.AddSingleton<IConnectionFactory>(sp =>
         {
@@ -29,7 +28,6 @@ class Program
                 Password = "guest",
             };
         });
-
         services.AddSingleton<IEventMessageManager, EventMessageManager>();
 
         var provider = services.BuildServiceProvider();
@@ -43,26 +41,44 @@ class Program
 
         var channel = rabbit.Channel;
 
-        // ✅ ส่งข้อความแบบ string
-        Console.WriteLine("🚀 Sending message to queue...");
-        bool result = await publisher.PublishAsync(channel, "demo-queue", "Hello RabbitMQ!");
+        Console.WriteLine("🔥 Declaring + Publishing queues...");
 
-        Console.WriteLine(result ? "✅ Publish success" : "❌ Publish failed");
-
-        // ❗ ทดสอบการ pipeline (optional)
-        Console.WriteLine("🔥 Declaring 2 queues in parallel...");
-        var t1 = channel.QueueDeclareAsync("test-pipeline-1", false, false, false);
-        await Task.Delay(1); // ⚠️ จงใจให้ t2 เริ่มก่อน t1 ตอบ
-        var t2 = channel.QueueDeclareAsync("test-pipeline-2", false, false, false);
-
-        try
+        for (int i = 0; i < 100; i++)
         {
-            await Task.WhenAll(t1, t2);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"💥 ERROR: {ex.GetType().Name}");
-            Console.WriteLine(ex.Message);
+            try
+            {
+                Console.WriteLine($"🌀 Round {i + 1}");
+
+                var tasks = new Task[10];
+
+                for (int j = 0; j < 10; j++)
+                {
+                    string queueName = $"q-race-{i}-{j}";
+                    string message = $"Hello from {queueName}";
+
+                    tasks[j] = Task.Run(async () =>
+                    {
+                        // ✅ Step 1: Declare queue
+                        await channel.QueueDeclareAsync(queue: queueName,
+                            durable: true,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+
+                        // ✅ Step 2: Publish message using service
+                        await publisher.PublishAsync(channel, queueName, message);
+                    });
+                }
+
+                await Task.WhenAll(tasks);
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 ERROR: {ex.GetType().Name}");
+                Console.WriteLine(ex.Message);
+                break;
+            }
         }
 
         await rabbit.DisposeAsync();

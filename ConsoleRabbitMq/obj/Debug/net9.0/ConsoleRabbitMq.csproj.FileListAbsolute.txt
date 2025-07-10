@@ -85,3 +85,4 @@
 /Users/tanaton/Desktop/dotnet/PocIssue/ConsoleRabbitMq/bin/Debug/net9.0/zipkin4net.middleware.aspnetcore.dll
 /Users/tanaton/Desktop/dotnet/PocIssue/ConsoleRabbitMq/bin/Debug/net9.0/runtimes/unix/lib/netstandard1.3/System.Net.Http.WinHttpHandler.dll
 /Users/tanaton/Desktop/dotnet/PocIssue/ConsoleRabbitMq/bin/Debug/net9.0/runtimes/win/lib/netstandard1.3/System.Net.Http.WinHttpHandler.dll
+/Users/tanaton/Desktop/dotnet/PocIssue/ConsoleRabbitMq/obj/Debug/net9.0/ConsoleRabbitMq.sourcelink.json
